@@ -4,6 +4,7 @@ A 2-player board game related to compression of enumerations and Kolmgorov compl
 See the technical [article](https://arxiv.org/abs/2304.03030) (with X. Zhang and B. Zhan) in Arxiv. <br><br>
 
 <p margin-top="400px" align="center"><img width="600"  src="https://github.com/bob7/blockgame/blob/main/img/evenImgd.png"></p>
+<br><br>
 
 Two players click the white and shaded boxes in alternate rounds (stages). At each stage:
 
