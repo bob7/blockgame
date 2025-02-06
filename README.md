@@ -5,6 +5,6 @@ See the technical [article](https://arxiv.org/abs/2304.03030) (with X. Zhang and
 
 Rules included at the website.
 <p align="center">
-<img width="400"  src="https://github.com/bob7/blockgame/blob/main/img/evenImgd.png">
+<img width="600"  src="https://github.com/bob7/blockgame/blob/main/img/evenImgd.png">
 </p>
 
