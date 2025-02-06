@@ -6,5 +6,5 @@ See the technical [article](https://arxiv.org/abs/2304.03030) (with X. Zhang and
 Rules included at the website.
 
 
-<p margin-top="40px" align="center"><img width="600"  src="https://github.com/bob7/blockgame/blob/main/img/evenImgd.png"></p>
+<p margin-top="400px" align="center"><img width="600"  src="https://github.com/bob7/blockgame/blob/main/img/evenImgd.png"></p>
 
