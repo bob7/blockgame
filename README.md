@@ -5,6 +5,6 @@ See the technical [article](https://arxiv.org/abs/2304.03030) (with X. Zhang and
 
 Rules included at the website.
 
-![](img/evenImg.png)
+![](img/evenImgds.png)
 
 
