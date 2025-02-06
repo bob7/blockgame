@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+	   font-size: 9pt;
+    }
+	h1 {color:#6B8E23;}
+	h3 {top-margin:0px;}
+    .game-container {
+      width: 100%;
+      text-align: center;
+      margin-top: 50px;
+    }
+    .number-bar {
+      display: grid;
+      grid-gap: 2px;
+      justify-content: center;
+      margin-bottom: 0px;
+    }
+    .number-block {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 12px;  /* Smaller font size */
+      color: transparent; /* Hide the number */
+      position: relative;
+      border: 2px solid black; /* Black border */
+    }
+    .even {
+      background-color: #FFEFD5;
+    }
+    .odd {
+      background-color: white;
+    }
+    .player1-picked {
+      background-color: rgba(128, 128, 128, 0.5); /* Transparent gray */
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+    }
+    .player2-picked {
+      background-color: rgba(0, 128, 0, 0.5); /* Transparent green */
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+    }
+    .highlighted {
+      background-color: lightblue !important;  /* Light blue highlight */
+    }
+    .rules {
+/*	background: #eee;*/
+      padding-bottom: 40px;
+	  width:600px;
+	  line-height: 1.5em;
+	  margin:auto;
+	  font-size: 11pt;
+	  text-align: left;
+    }
+	
+    .picked-numbers {
+      margin-top: 0px;
+  	  color:#fff;
+    }
+    .picked-numbers span {
+      font-size: 20px;
+      margin-right: 10px;
+      display: inline-block;
+    }
+    .picked-numbers label {
+      font-weight: bold;
+    }
+    .input-container {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>Block Game</h1>
+
+    <!-- Input for grid dimensions -->
+    <div class="input-container">
+      <label for="rows">Rows:</label>
+      <input type="number" id="rows" min="1" value="15">
+      <label for="cols">Columns:</label>
+      <input type="number" id="cols" min="1" value="15">
+      <button onclick="generateGrid()">Generate Grid</button>
+    </div>
+
+    <div class="number-bar" id="number-bar">
+      <!-- Number blocks will be generated here -->
+    </div>
+
+    <div class="picked-numbers">
+      <label>Player 1's latest picks:</label>
+      <span id="player1-latest-picks"></span><br>
+      <label>Player 2's latest pick:</label>
+      <span id="player2-latest-pick"></span>
+    </div>
+
+<div class="rules">
+<h3>Rules</h3>
+<p>Two players click the white and shaded boxes in alternate rounds (stages). At each stage:</p>
+<ul>
+<li><p>Player 1 chooses any four boxes that he hasn’t chosen earlier (his picks are permanently marked with a gray half-fill)</p></li>
+<li>Player 2 picks a shaded box in the range of boxed previously clicked by player 1 that he has not picked before (these are highlighted with light blue at his turn).</li>
+</ul>
+<p>The player who first runs out of legitimate moves is the loser.</p>
+
+</div>
+	
+  </div>
+
+  <script>
+    let player1Picks = [];
+    let player2Picks = [];
+    let turn = 1; // 1 for Player 1, 2 for Player 2
+    let player1StagePicks = []; // For tracking Player 1's 4 picks per stage
+    let numBlocks = 0;  // Total number of blocks
+    let numRows = 15;  // Default number of rows
+    let numCols = 15;  // Default number of columns
+    let isPlayer2Turn = false; // Flag to check if it's Player 2's turn
+    let player1MinPick = null;
+    let player1MaxPick = null;
+    let player2Lost = false; // Flag to check if Player 2 has lost
+
+    // Function to generate the grid based on user input
+    function generateGrid() {
+      // Get the rows and columns from the input fields
+      numRows = parseInt(document.getElementById("rows").value);
+      numCols = parseInt(document.getElementById("cols").value);
+      numBlocks = numRows * numCols;
+
+      // Clear any existing grid
+      const numberBar = document.getElementById("number-bar");
+      numberBar.innerHTML = "";
+
+      // Set the grid layout based on the number of columns
+      numberBar.style.gridTemplateColumns = `repeat(${numCols}, 40px)`;
+
+      // Create the new grid
+      for (let i = 1; i <= numBlocks; i++) {
+        const block = document.createElement('div');
+        block.classList.add('number-block');
+        
+        // Mark even numbers with yellow color
+        if (i % 2 === 0) {
+          block.classList.add('even');
+        } else {
+          block.classList.add('odd');
+        }
+
+        block.addEventListener('click', () => handleBlockClick(i, block));
+        numberBar.appendChild(block);
+      }
+    }
+
+    // Function to handle block click
+    function handleBlockClick(number, block) {
+      // If it's not Player 1's turn or Player 2's turn, don't allow clicks
+      if ((turn === 1 && player1StagePicks.length >= 4) || (turn === 2 && isPlayer2Turn === false)) {
+        return;
+      }
+
+      // Player 1's turn (picking 4 numbers)
+      if (turn === 1 && player1StagePicks.length < 4) {
+        if (player1Picks.includes(number)) {
+          return; // Player 1 cannot pick this block again
+        }
+
+        // Player 1 picks the number
+        player1StagePicks.push(number);
+        const topHalf = document.createElement('div');
+        topHalf.classList.add('player1-picked');
+        block.appendChild(topHalf);
+
+        // Mark the block as picked by Player 1
+        player1Picks.push(number);
+
+        // Update the display for Player 1's latest picks
+        document.getElementById('player1-latest-picks').textContent = player1StagePicks.join(', ');
+
+        // Check if this block was also picked by Player 2
+        if (player2Picks.includes(number)) {
+          block.style.backgroundColor = 'black';  // Fill with black
+        }
+
+        // If Player 1 has picked 4 numbers, it's time for Player 2 to pick
+        if (player1StagePicks.length === 4) {
+          // Highlight even blocks between the smallest and largest pick by Player 1
+          highlightEvenBlocksBetweenPicks();
+
+          // Save min and max picks for Player 1
+          player1MinPick = Math.min(...player1StagePicks);
+          player1MaxPick = Math.max(...player1StagePicks);
+
+          isPlayer2Turn = true;
+          turn = 2;
+          document.getElementById('player2-latest-pick').textContent = '';
+        }
+      }
+      // Player 2's turn (picking only even numbers between min and max picks of Player 1)
+      else if (turn === 2 && isPlayer2Turn === true) {
+        // Player 2 can only pick even numbers between Player 1's min and max picks
+        if (number % 2 !== 0 || number < player1MinPick || number > player1MaxPick) {
+          return; // Ignore click if the number is odd or outside Player 1's min-max range
+        }
+
+        if (player2Picks.includes(number)) {
+          return; // Player 2 cannot pick this block again
+        }
+
+        // Player 2 picks the number
+        player2Picks.push(number);
+        const bottomHalf = document.createElement('div');
+        bottomHalf.classList.add('player2-picked');
+        block.appendChild(bottomHalf);
+
+        // Mark the block as picked by Player 2
+        document.getElementById('player2-latest-pick').textContent = number;
+
+        // Check if this block was also picked by Player 1
+        if (player1Picks.includes(number)) {
+          block.style.backgroundColor = 'black';  // Fill with black
+        }
+
+        // After Player 2's pick, reset for next turn (Player 1)
+        isPlayer2Turn = false;
+        turn = 1;
+        player1StagePicks = []; // Clear Player 1's picks for next stage
+        clearHighlight(); // Clear the light blue highlighting after Player 2's move
+
+        // Check if Player 1 lost (all blocks picked by Player 1)
+        checkPlayer1Lost();
+      }
+    }
+
+    // Function to highlight even blocks between the smallest and largest pick by Player 1
+    function highlightEvenBlocksBetweenPicks() {
+      const minPick = Math.min(...player1StagePicks);
+      const maxPick = Math.max(...player1StagePicks);
+      let allEvenBlocksPickedByPlayer2 = true;
+
+      for (let i = minPick; i <= maxPick; i++) {
+        if (i % 2 === 0 && !player2Picks.includes(i)) {
+          const block = document.querySelector(`.number-block:nth-child(${i})`);
+          block.classList.add('highlighted');
+          allEvenBlocksPickedByPlayer2 = false;
+        }
+      }
+
+      // If all the even blocks between minPick and maxPick are picked by Player 2, show the pop-up
+      if (allEvenBlocksPickedByPlayer2) {
+        alert("Player 2 lost");
+        player2Lost = true;
+      }
+    }
+
+    // Function to clear the light blue highlighting
+    function clearHighlight() {
+      const highlightedBlocks = document.querySelectorAll('.highlighted');
+      highlightedBlocks.forEach(block => {
+        block.classList.remove('highlighted');
+      });
+    }
+
+    // Function to check if Player 1 has lost (all blocks picked by Player 1)
+    function checkPlayer1Lost() {
+      // If all blocks have been picked by Player 1
+      if (player1Picks.length === numBlocks && !player2Lost) {
+        alert("Player 1 lost");
+      }
+    }
+
+    // Initialize the game with default grid size
+    generateGrid();
+  </script>
+</body>
+</html>
